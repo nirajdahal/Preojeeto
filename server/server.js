@@ -1,0 +1,55 @@
+require("dotenv").config();
+const express = require("express");
+const http = require('http');
+const mongoose = require("mongoose");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
+const userRoute = require("./routes/userRoute")
+const notificationRoute = require("./routes/notificationRoute")
+const projectRoute = require("./routes/projectRoute")
+const stageRoute = require("./routes/stageRoute")
+const taskRoute = require("./routes/taskRoute")
+const dashboardRoute = require("./routes/dashboardRoute")
+const errorHandler = require("./middleware/errorMiddleware");
+const initializeSocket = require('./socket/Socket');
+// import the initializeSocket function
+const app = express();
+const server = http.createServer(app);
+const io = initializeSocket();
+// Middlewares
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(bodyParser.json());
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "https://authz-app.vercel.app"],
+    credentials: true,
+  })
+);
+app.options('*', cors({
+  origin: ["http://localhost:3000", "https://authz-app.vercel.app"],
+  credentials: true,
+}));
+// Routes
+app.use("/api/users", userRoute)
+app.use("/api/notifications", notificationRoute)
+app.use("/api/projects", projectRoute)
+app.use("/api/stages", stageRoute)
+app.use("/api/tasks", taskRoute)
+app.use("/api/dashboard", dashboardRoute)
+app.get("/", (req, res) => {
+  res.send("Home Page");
+});
+// Error Handler
+app.use(errorHandler);
+const PORT = process.env.PORT || 5000;
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => {
+    server.listen(PORT, () => {
+      console.log(`Server running on ${PORT}`);
+    });
+  })
+  .catch((err) => console.log(err));
