@@ -7,7 +7,7 @@
     "start": "cd server && node server.js",
     "build": "npm run build-server && npm run build-client",
     "build-client": "cd client && npm install && npm run build",
-    "build-server": "cd server && npm install && npm run build",
+    "build-server": "cd server && npm install",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
