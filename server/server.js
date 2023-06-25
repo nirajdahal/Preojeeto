@@ -45,6 +45,15 @@ app.get("/", (req, res) => {
 // Error Handler
 app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
+const path = require("path");
+__dirname = path.resolve();
+// render deployment
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "/client/build")));
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "client", "build", "index.html"));
+  });
+}
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
