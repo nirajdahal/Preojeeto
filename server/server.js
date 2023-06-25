@@ -24,14 +24,14 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://projeeto.onrender.com/"],
+    origin: "*",
     credentials: true,
   })
-);
+)
 app.options('*', cors({
-  origin: ["http://localhost:3000", "https://projeeto.onrender.com/"],
+  origin: "*",
   credentials: true,
-}));
+}))
 // Routes
 app.use("/api/users", userRoute)
 app.use("/api/notifications", notificationRoute)
