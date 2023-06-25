@@ -24,12 +24,12 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://authz-app.vercel.app"],
+    origin: ["http://localhost:3000", "https://projeeto.onrender.com/"],
     credentials: true,
   })
 );
 app.options('*', cors({
-  origin: ["http://localhost:3000", "https://authz-app.vercel.app"],
+  origin: ["http://localhost:3000", "https://projeeto.onrender.com/"],
   credentials: true,
 }));
 // Routes
