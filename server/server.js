@@ -16,7 +16,7 @@ const initializeSocket = require('./socket/Socket');
 // import the initializeSocket function
 const app = express();
 const server = http.createServer(app);
-const io = initializeSocket();
+const io = initializeSocket(server);
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -39,9 +39,6 @@ app.use("/api/projects", projectRoute)
 app.use("/api/stages", stageRoute)
 app.use("/api/tasks", taskRoute)
 app.use("/api/dashboard", dashboardRoute)
-app.get("/", (req, res) => {
-  res.send("/app");
-});
 // Error Handler
 app.use(errorHandler);
 const PORT = process.env.PORT || 5000;

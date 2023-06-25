@@ -1,9 +1,9 @@
 const jwt = require('jsonwebtoken');
 let activeUsers = []
-function initializeSocket() {
-    const io = require("socket.io")(8900, {
+function initializeSocket(server) {
+    const io = require("socket.io")(server, {
         cors: {
-            origin: "http://localhost:3000",
+            origin: "*",
         },
     });
     io.use((socket, next) => {
