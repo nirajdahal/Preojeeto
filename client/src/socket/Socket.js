@@ -3,7 +3,7 @@ import { io } from "socket.io-client";
 import { getNotifications } from "../features/common/slice/NotificationSlice";
 let socketInstance;
 export const initializeSocket = (token, user) => {
-    socketInstance = io('https://projeeto.onrender.com', {
+    socketInstance = io('https://projeeto.onrender.com/', {
         query: { token },
     });
     socketInstance.emit("new-user-add", user._id)
