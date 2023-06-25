@@ -40,7 +40,7 @@ app.use("/api/stages", stageRoute)
 app.use("/api/tasks", taskRoute)
 app.use("/api/dashboard", dashboardRoute)
 app.get("/", (req, res) => {
-  res.send("Home Page");
+  res.send("/app");
 });
 // Error Handler
 app.use(errorHandler);
