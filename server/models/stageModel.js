@@ -15,7 +15,6 @@ const StageSchema = new mongoose.Schema({
     color: {
         type: String,
         required: false,
-        unique: true,
         trim: true,
         default: "neutral",
         maxlength: [20, 'Color can not be more than 20 characters']

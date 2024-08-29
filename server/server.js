@@ -1,4 +1,5 @@
 require("dotenv").config();
+console.log(process.env.MONGO_URI)
 const express = require("express");
 const http = require('http');
 const mongoose = require("mongoose");
@@ -24,7 +25,7 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(
   cors({
-    origin: "*",
+    origin: "http://localhost:3000",
     credentials: true,
   })
 )
@@ -39,9 +40,12 @@ app.use("/api/projects", projectRoute)
 app.use("/api/stages", stageRoute)
 app.use("/api/tasks", taskRoute)
 app.use("/api/dashboard", dashboardRoute)
+
 // Error Handler
 app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
+
+
 const path = require("path");
 __dirname = path.resolve();
 // render deployment
@@ -51,6 +55,8 @@ if (process.env.NODE_ENV === "production") {
     res.sendFile(path.join(__dirname, "client", "build", "index.html"));
   });
 }
+
+//Connect MongoDb
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
