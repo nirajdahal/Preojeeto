@@ -13,6 +13,7 @@ const initialState = {
   isProjectDelete: false,
   isLoading: false,
   message: "",
+  taskActivities: [],
 };
 const setErrorFromResponse = (error) => {
   let message = "";
@@ -120,7 +121,33 @@ export const updateTask = createAsyncThunk(
   }
 );
 
-// Update task
+// create task activity
+export const createActivity = createAsyncThunk(
+  "project/createActivity",
+  async ({ paramIds, data }, thunkAPI) => {
+    try {
+      return await projectService.createActivity(paramIds, data);
+    } catch (error) {
+      const message = setErrorFromResponse(error);
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// get taskactivity
+export const getActivities = createAsyncThunk(
+  "project/getActivities",
+  async (paramIds, thunkAPI) => {
+    try {
+      return await projectService.getActivities(paramIds);
+    } catch (error) {
+      const message = setErrorFromResponse(error);
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// Get Task Details task
 export const getTaskDetails = createAsyncThunk(
   "project/getTaskDetails",
   async ({ stageId, id }, thunkAPI) => {
@@ -183,6 +210,7 @@ const projectSlice = createSlice({
       state.isSuccess = false;
       state.isLoading = false;
       state.message = "";
+      state.taskActivities = [];
     },
     RESET_TASK(state) {
       state.projects = [];
@@ -196,6 +224,7 @@ const projectSlice = createSlice({
       state.isSuccess = false;
       state.isLoading = false;
       state.message = "";
+      state.taskActivities = [];
     },
   },
   extraReducers: (builder) => {
@@ -247,8 +276,6 @@ const projectSlice = createSlice({
           ...action.payload.data,
           assignees: assigneesList,
         };
-
-        toast.success("Successful");
       })
       .addCase(getTaskDetails.rejected, (state, action) => {
         state.isLoading = false;
@@ -351,6 +378,38 @@ const projectSlice = createSlice({
         state.isError = true;
         state.message = action.payload;
         toast.error(action.payload);
+      })
+      .addCase(createActivity.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+        toast.error(action.payload);
+      })
+      .addCase(createActivity.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(createActivity.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.taskActivities = [action.payload.data, ...state.taskActivities];
+
+        state.message = action.payload.message;
+        toast.success("Activity added");
+      })
+      .addCase(getActivities.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload;
+        toast.error(action.payload);
+      })
+      .addCase(getActivities.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getActivities.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.taskActivities = action.payload.data;
+        state.message = action.payload.message;
       })
 
       .addCase(updateTaskAttachment.pending, (state) => {

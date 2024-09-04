@@ -2,8 +2,11 @@ import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import {
+  createActivity,
   deleteTaskAttachment,
+  getActivities,
   getTaskDetails,
+  RESET_TASK,
   updateTask,
   updateTaskAttachment,
 } from "../../slice/projectSlice";
@@ -21,6 +24,7 @@ import InformationCircleIcon from "@heroicons/react/24/outline/InformationCircle
 import DocumentDuplicateIcon from "@heroicons/react/24/outline/DocumentDuplicateIcon";
 import UserGroupIcon from "@heroicons/react/24/outline/UserGroupIcon";
 import PaperClipIcon from "@heroicons/react/24/outline/PaperClipIcon";
+import moment from "moment";
 
 const iconClasses = `h-6 w-6`;
 function EditTask() {
@@ -28,7 +32,9 @@ function EditTask() {
   const navigate = useNavigate();
   const location = useLocation();
   const taskToEdit = location.state;
-  const { updatedTask, task, isSuccess } = useSelector(
+  const projectToShow = location.state.projectId;
+  console.log(projectToShow);
+  const { updatedTask, taskActivities, isSuccess } = useSelector(
     (state) => state.project
   );
 
@@ -44,10 +50,14 @@ function EditTask() {
   const [multiSelectOption, setMultiSelectOption] = useState([]);
   const [selectedMultiOption, setSelectedMultiOption] = useState(null);
   const [attachment, setAttachment] = useState();
+  const [activity, setActivity] = useState("");
   const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (updatedTask && isSuccess) {
+      dispatch(
+        getActivities({ stageId: taskToEdit.stage, id: taskToEdit._id })
+      );
       setSelectedTask((prevVal) => updatedTask);
       // send notification only to the users modified otherwise dont send notification
       if (updatedTask.assignees) {
@@ -98,9 +108,14 @@ function EditTask() {
 
       setMultiSelectOption(() => options);
     };
+
     getAllTeamList();
     dispatch(getTaskDetails({ stageId: taskToEdit.stage, id: taskToEdit._id }));
   }, []);
+
+  useEffect(() => {
+    console.log("taskActivities i have been called", taskActivities);
+  }, [taskActivities]);
 
   const extractTeamImage = (assignee) => {
     if (!assignee) {
@@ -124,6 +139,7 @@ function EditTask() {
 
   const addAttachments = (event) => {
     const file = event.target.files[0];
+    console.log("file", file);
     setAttachment(file);
   };
 
@@ -135,6 +151,7 @@ function EditTask() {
 
     const formData = new FormData();
     formData.append("file", attachment);
+    console.log(formData);
 
     dispatch(updateTaskAttachment({ paramIds, data: formData }));
     fileInputRef.current.value = "";
@@ -167,6 +184,24 @@ function EditTask() {
     dispatch(updateTask({ paramIds, data }));
   };
 
+  const createTaskActivity = () => {
+    const paramIds = {
+      id: selectedTask._id,
+      stageId: selectedTask.stage,
+    };
+
+    console.log(paramIds);
+
+    dispatch(createActivity({ paramIds, data: { description: activity } }));
+  };
+
+  const handleCancel = () => {
+    navigate(`/app/kanban`, { state: projectToShow });
+    console.log(projectToShow);
+    dispatch(RESET());
+    dispatch(RESET_TASK());
+  };
+
   return (
     <>
       {allTeamMembers && updatedTask && (
@@ -175,7 +210,7 @@ function EditTask() {
             <div className=" cursor-auto h-300 ">
               <div className="m-auto grid gap-4 h-150 modal-box w-12/12 max-w-full ">
                 <label
-                  onClick={() => navigate("/app/kanban")}
+                  onClick={handleCancel}
                   htmlFor="editTask"
                   className="btn btn-sm btn-circle absolute right-2 top-2"
                 >
@@ -358,6 +393,7 @@ function EditTask() {
                   ref={fileInputRef}
                   className="file-input file-input-bordered w-full max-w-xs"
                   name="files"
+                  accept="application/pdf, image/*"
                   onChange={addAttachments}
                 />
 
@@ -393,13 +429,15 @@ function EditTask() {
                               <div className="flex items-center space-x-3">
                                 <div className="avatar">
                                   <div className="mask mask-squircle w-12 h-12">
-                                    {attachment.format == "pdf" ? (
-                                      <PaperClipIcon />
-                                    ) : (
+                                    {attachment.format == "jpg" ||
+                                    attachment.format == "jpeg" ||
+                                    attachment.format == "png" ? (
                                       <img
                                         src={`${attachment.url}`}
                                         alt={`${attachment.fileName}`}
                                       />
+                                    ) : (
+                                      <PaperClipIcon />
                                     )}
                                   </div>
                                 </div>
@@ -449,52 +487,40 @@ function EditTask() {
               </label>
             </div>
             <textarea
+              onChange={(e) => setActivity(e.target.value)}
               type="text"
               placeholder="Search…"
               className="textarea textarea-bordered"
             />
             <div>
-              <button className="btn btn-success btn-sm">Save</button>
+              <button
+                disabled={activity === ""}
+                className="btn btn-success btn-sm"
+                onClick={createTaskActivity}
+              >
+                Save
+              </button>
             </div>
 
-            <div className="mt-3 shadow-lg p-2">
-              <div className="flex">
-                <img
-                  className="avatar w-10 h-10 rounded-full"
-                  src="https://resizing.flixster.com/xvfdB-xK1Ec8AkRnBZFSZiRhTWo=/ems.cHJkLWVtcy1hc3NldHMvdHZzZWFzb24vUlRUVjUxNTIxNC53ZWJw"
-                ></img>
+            {taskActivities.length > 0 &&
+              taskActivities.map((taskActivity) => (
+                <div key={taskActivity._id} className="mt-3 shadow-lg p-2">
+                  <div className="flex">
+                    <img
+                      className="avatar w-10 h-10 rounded-full"
+                      src={taskActivity.sender.photo}
+                    ></img>
 
-                <p className="p-2">
-                  Niraj Dahal &nbsp;&nbsp;&nbsp;&nbsp;
-                  <span className="text-sm text-secondary ">5 minutes ago</span>
-                </p>
-              </div>
-              <p className="mt-2 p-5 alert">
-                Lorem Ipsum is simply dummy text of the printing and typesetting
-                industry. Lorem Ipsum has been the industry's standard dummy
-                text ever since the 1500s, when an unknown printer took a galley
-                of type and scrambled it to make a type specimen book. It has
-              </p>
-            </div>
-            <div className="mt-3 shadow-lg p-2">
-              <div className="flex">
-                <img
-                  className="avatar w-10 h-10 rounded-full"
-                  src="https://resizing.flixster.com/xvfdB-xK1Ec8AkRnBZFSZiRhTWo=/ems.cHJkLWVtcy1hc3NldHMvdHZzZWFzb24vUlRUVjUxNTIxNC53ZWJw"
-                ></img>
-
-                <p className="p-2">
-                  Niraj Dahal &nbsp;&nbsp;&nbsp;&nbsp;
-                  <span className="text-sm text-secondary ">5 minutes ago</span>
-                </p>
-              </div>
-              <p className="mt-2 p-5 alert">
-                Lorem Ipsum is simply dummy text of the printing and typesetting
-                industry. Lorem Ipsum has been the industry's standard dummy
-                text ever since the 1500s, when an unknown printer took a galley
-                of type and scrambled it to make a type specimen book. It has
-              </p>
-            </div>
+                    <p className="p-2">
+                      {taskActivity.sender.name} &nbsp;&nbsp;&nbsp;&nbsp;
+                      <span className="text-sm text-secondary ">
+                        {moment(taskActivity.createdAt).fromNow()}]
+                      </span>
+                    </p>
+                  </div>
+                  <p className="mt-2 p-5 alert">{taskActivity.description}</p>
+                </div>
+              ))}
           </div>
         </>
       )}

@@ -90,6 +90,23 @@ const updateTask = async (paramIds, data) => {
   return response.data;
 };
 
+//Cretae Acitivty
+const createActivity = async (paramIds, data) => {
+  const response = await axios.post(
+    `${API_URL}/stages/${paramIds.stageId}/tasks/${paramIds.id}/activity`,
+    data
+  );
+  return response.data;
+};
+
+//Cretae Acitivty
+const getActivities = async (paramIds) => {
+  const response = await axios.get(
+    `${API_URL}/stages/${paramIds.stageId}/tasks/${paramIds.id}/activity`
+  );
+  return response.data;
+};
+
 //Update Task
 const deleteTaskAttachment = async (paramIds, data) => {
   const response = await axios.put(
@@ -139,5 +156,7 @@ const projectService = {
   updateTaskAttachments,
   getTaskDetails,
   deleteTaskAttachment,
+  createActivity,
+  getActivities,
 };
 export default projectService;
