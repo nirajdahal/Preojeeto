@@ -8,6 +8,7 @@ const User = require("../models/userModel");
 const cloudinary = require("cloudinary").v2;
 const fs = require("fs");
 const crypto = require("crypto");
+const Activity = require("../models/activityModel");
 // @desc    Create a new task
 // @route   POST /projects/:projectId/stages/:stageId/tasks
 // @access  Private
@@ -115,7 +116,7 @@ const updateTaskAttachments = asyncHandler(async (req, res) => {
     res.status(200).json({ success: true, data: task });
   } catch (error) {
     fs.readdirSync("./temp").forEach((file) => {
-      const filePath = `${tempFolder}/${file}`;
+      const filePath = `./temp/${file}`;
       fs.unlinkSync(filePath);
     });
   }
@@ -247,6 +248,56 @@ const reorderTaskWithinStage = asyncHandler(async (req, res) => {
     .status(200)
     .json({ success: true, message: "Reorderd task successful", data: {} });
 });
+
+// @desc    Create a new task
+// @route   POST /projects/:projectId/stages/:stageId/tasks/activity
+// @access  Private
+
+const createActivity = asyncHandler(async (req, res) => {
+  const { description } = req.body;
+
+  const task = await Task.findById(req.params.id);
+
+  if (!task) {
+    throw new ErrorResponse("Task not found with ID: ${req.params.id}", 404);
+  }
+
+  const activity = new Activity({
+    description,
+    sender: req.user,
+    task: task._id,
+  });
+
+  await activity.save();
+
+  const populatedActivity = await Activity.populate(activity, {
+    path: "sender",
+    select: "name photo", // Select only the name and photo fields
+  });
+
+  res.status(201).json({ success: true, data: populatedActivity });
+});
+
+// @desc    Get activities by task ID
+// @route   GET /projects/:projectId/stages/:stageId/tasks/:taskId/activities
+// @access  Private
+
+const getActivities = asyncHandler(async (req, res) => {
+  const taskId = req.params.id;
+
+  const activities = await Activity.find({ task: taskId })
+    .populate("sender", "name photo") // Populate sender field with name and photo
+    .sort({ createdAt: -1 }); // Sort activities by creation date in descending order
+
+  if (!activities) {
+    throw new ErrorResponse(
+      "No activities found for task with ID: ${taskId}",
+      404
+    );
+  }
+
+  res.status(200).json({ success: true, data: activities });
+});
 const reorderTask = async (taskIdToUpdate, stageId, newOrder) => {
   // Find the task that is being updated
   const taskToUpdate = await Task.findById(taskIdToUpdate);
@@ -329,4 +380,6 @@ module.exports = {
   reorderTaskWithinStage,
   getTaskDetails,
   deleteTaskAttachment,
+  createActivity,
+  getActivities,
 };

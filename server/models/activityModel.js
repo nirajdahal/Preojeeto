@@ -3,11 +3,10 @@ const AcitivitySchema = new mongoose.Schema({
   description: {
     type: String,
     required: [true, "Please add a name"],
-    unique: true,
     trim: true,
     maxlength: [1000, "Name can not be more than 1000 characters"],
   },
-  user: {
+  sender: {
     type: mongoose.Schema.ObjectId,
     ref: "User",
     required: true,
